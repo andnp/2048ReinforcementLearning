@@ -1,0 +1,3 @@
+[submodule "CPPReinforcementLearning"]
+	path = CPPReinforcementLearning
+	url = https://github.com/andnp/CPPReinforcementLearning.git
