@@ -2,14 +2,19 @@
 #include <random>
 #include <math.h>
 #include <thread>
+// #include <tbb/concurrent_vector.h>
+#include <mutex>
 
 #include "grid.hpp"
-#include "../CNeuralNets/FeedforwardNet/brain.h"
+#include "./CPPReinforcementLearning/FeedforwardNet/brain.h"
 using namespace std;
 
 #define LEARN_STEPS 5
 
-vector<int> scores;
+mutex elock;
+
+
+
 
 vector<double> getGrid(grid g){
 	vector<double> ret;
@@ -23,18 +28,35 @@ vector<double> getGrid(grid g){
 	return ret;
 }
 
-unsigned int moves = 0;
-unsigned int game = 0;
 
-int main(){
+vector<brain::experience> experiences;
+
+
+void push(brain::experience e){
+	elock.lock();
+	experiences.push_back(e);
+	elock.unlock();
+}
+
+random_device rd;
+mt19937 gen(rd());	
+
+
+void run(){
+	vector<int> scores;
+	unsigned int moves = 0;
+	unsigned int game = 0;
 	brain b;
 	b.initialize(260);
 	while(moves < 1000000000){
 		grid g;
 		while(g.can_move()){
+			brain::experience e;
 			int start_score = g.score();
 			vector<double> inputs = getGrid(g);
+			e.state0 = inputs;
 			int action = b.forward(inputs);
+			e.action0 = action;
 
 			switch(action){
 				case 0:
@@ -51,13 +73,25 @@ int main(){
 					break;
 				case -1:
 					cout << "error";
-					return 0;
 			}
 
 			int diff_score = g.score() - start_score;
 			double reward = diff_score;
+			e.reward0 = reward;
+			e.state1 = getGrid(g);
 			b.backward(reward);
 			moves++;
+			uniform_real_distribution<> dist(0,experiences.size() - 1);
+			if(experiences.size() > 10000000){
+				experiences[dist(gen)] = e;
+			} else {
+				push(e);
+			}
+			if(experiences.size() > 10){
+				for(int i = 0; i < LEARN_STEPS; i++){
+					b.learn(experiences[dist(gen)]);
+				}
+			}
 		}
 		game++;
 		scores.push_back(g.score());
@@ -69,8 +103,17 @@ int main(){
 				rollAvg += scores[i];
 			}
 		}
-		cout << "game: " << game << " score: " << g.score() << " moves: " << moves << " buffer: " << b.experienceBuffer.size() << " avg: " << avg/scores.size() << " roll: " << rollAvg/20 << "\n";
+		cout << "game: " << game << " score: " << g.score() << " moves: " << moves << " buffer: " << experiences.size() << " avg: " << avg/scores.size() << " roll: " << rollAvg/20 << "\n";
 	}
 
+}
+
+int main(){
+	experiences.reserve(10000000);
+	thread t1(run);
+	thread t2(run);
+	thread t3(run);
+	thread t4(run);
+	t4.join();
 	return 0;
 }
