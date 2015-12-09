@@ -86,7 +86,7 @@ void run(string thread, brain b){
 			} else {
 				push(e);
 			}
-			if(experiences.size() > 10){
+			if(experiences.size() > 100000){
 				for(int i = 0; i < LEARN_STEPS; i++){
 					b.learn(experiences[dist(gen)]);
 				}
