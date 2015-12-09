@@ -116,26 +116,32 @@ int main(){
     default_random_engine gen(seed);  
 	uniform_int_distribution<> dist(25,100);
 	brain b;
+
+	b.burnIn = 250000;
+	b.learnSteps = 2500000;
+	b.gamma = .75;
+
+
 	vector<int> layers = {(int)dist(gen), (int)(.5 * dist(gen)), 1};
 	vector<int> types = {5, 5, 1};
 	vector<double> dropout = {.01, .02, 0};
 	vector<double> lambda = {0,0,0};
-	b.valueNet.instantiate(260, layers, types, dropout, lambda, .005);
+	b.valueNet.instantiate(260, layers, types, dropout, lambda, .1);
 	thread t1(run, "thread 1", b);
 
 	layers = {(int)dist(gen), (int)(.5 * dist(gen)), 1};
 	brain b1;
-	b1.valueNet.instantiate(260, layers, types, dropout, lambda, .005);
+	b1.valueNet.instantiate(260, layers, types, dropout, lambda, .1);
 	thread t2(run, "thread 2", b1);
 
 	layers = {(int)dist(gen), (int)(.5 * dist(gen)), 1};
 	brain b2;
-	b2.valueNet.instantiate(260, layers, types, dropout, lambda, .005);
+	b2.valueNet.instantiate(260, layers, types, dropout, lambda, .1);
 	thread t3(run, "thread 3", b2);
 
 	layers = {(int)dist(gen), (int)(.5 * dist(gen)), 1};
 	brain b3;
-	b3.valueNet.instantiate(260, layers, types, dropout, lambda, .005);
+	b3.valueNet.instantiate(260, layers, types, dropout, lambda, .1);
 	thread t4(run, "thread 4", b3);
 
 	t4.join();
