@@ -81,7 +81,7 @@ void run(string thread, brain b){
 			b.backward(reward);
 			moves++;
 			uniform_real_distribution<> dist(0,experiences.size() - 1);
-			if(experiences.size() > 10000000){
+			if(experiences.size() > 2500000){
 				experiences[dist(gen)] = e;
 			} else {
 				push(e);
@@ -110,7 +110,7 @@ void run(string thread, brain b){
 }
 
 int main(){
-	experiences.reserve(1000000);
+	experiences.reserve(2500000);
 
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     default_random_engine gen(seed);  
