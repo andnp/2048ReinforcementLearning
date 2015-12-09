@@ -9,11 +9,12 @@
 #include "./CPPReinforcementLearning/FeedforwardNet/brain.h"
 using namespace std;
 
-#define LEARN_STEPS 5
+#define THREADS 4
+#define LEARN_STEPS THREADS * 2
 
 mutex elock;
 
-
+int high = 0;
 
 
 vector<double> getGrid(grid g){
@@ -42,12 +43,10 @@ random_device rd;
 mt19937 gen(rd());	
 
 
-void run(){
+void run(string thread, brain b){
 	vector<int> scores;
 	unsigned int moves = 0;
 	unsigned int game = 0;
-	brain b;
-	b.initialize(260);
 	while(moves < 1000000000){
 		grid g;
 		while(g.can_move()){
@@ -94,6 +93,8 @@ void run(){
 			}
 		}
 		game++;
+		if(g.score() > high)
+			high = g.score();
 		scores.push_back(g.score());
 		unsigned int avg = 0;
 		unsigned int rollAvg = 0;
@@ -103,17 +104,40 @@ void run(){
 				rollAvg += scores[i];
 			}
 		}
-		cout << "game: " << game << " score: " << g.score() << " moves: " << moves << " buffer: " << experiences.size() << " avg: " << avg/scores.size() << " roll: " << rollAvg/20 << "\n";
+		cout << thread << " game: " << game << " score: " << g.score() << " moves: " << moves << " buffer: " << experiences.size() << " avg: " << avg/scores.size() << " roll: " << rollAvg/20 << " high: " << high <<"\n";
 	}
 
 }
 
 int main(){
-	experiences.reserve(10000000);
-	thread t1(run);
-	thread t2(run);
-	thread t3(run);
-	thread t4(run);
+	experiences.reserve(1000000);
+
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    default_random_engine gen(seed);  
+	uniform_int_distribution<> dist(25,100);
+	brain b;
+	vector<int> layers = {(int)dist(gen), (int)(.5 * dist(gen)), 1};
+	vector<int> types = {5, 5, 1};
+	vector<double> dropout = {.01, .02, 0};
+	vector<double> lambda = {0,0,0};
+	b.valueNet.instantiate(260, layers, types, dropout, lambda, .005);
+	thread t1(run, "thread 1", b);
+
+	layers = {(int)dist(gen), (int)(.5 * dist(gen)), 1};
+	brain b1;
+	b1.valueNet.instantiate(260, layers, types, dropout, lambda, .005);
+	thread t2(run, "thread 2", b1);
+
+	layers = {(int)dist(gen), (int)(.5 * dist(gen)), 1};
+	brain b2;
+	b2.valueNet.instantiate(260, layers, types, dropout, lambda, .005);
+	thread t3(run, "thread 3", b2);
+
+	layers = {(int)dist(gen), (int)(.5 * dist(gen)), 1};
+	brain b3;
+	b3.valueNet.instantiate(260, layers, types, dropout, lambda, .005);
+	thread t4(run, "thread 4", b3);
+
 	t4.join();
 	return 0;
 }

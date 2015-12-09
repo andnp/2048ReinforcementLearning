@@ -4,7 +4,7 @@ project(ml2048)
 
 set(netDir ./CPPReinforcementLearning/FeedforwardNet/)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_CXX_FLAGS "-std=c++11 -pthread ${CMAKE_CXX_FLAGS} -g")
 
 add_executable(game game.cpp)
 add_library(grid utils.cpp grid.cpp)
