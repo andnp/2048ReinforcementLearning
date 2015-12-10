@@ -104,7 +104,7 @@ void run(string thread, brain b){
 				rollAvg += scores[i];
 			}
 		}
-		cout << thread << " game: " << game << " score: " << g.score() << " moves: " << moves << " buffer: " << experiences.size() << " avg: " << avg/scores.size() << " roll: " << rollAvg/20 << " high: " << high <<"\n";
+		cout << thread << " game: " << game << " score: " << g.score() << " moves: " << moves << " buffer: " << experiences.size() << " avg: " << avg/scores.size() << " roll: " << rollAvg/20 << " high: " << high << " e: " << b.epsilon <<"\n";
 	}
 
 }
@@ -118,7 +118,7 @@ int main(){
 	brain b;
 
 	b.burnIn = 250000;
-	b.learnSteps = 2500000;
+	b.learnSteps = 25000000;
 	b.gamma = .75;
 
 
