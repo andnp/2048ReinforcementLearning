@@ -122,10 +122,10 @@ int main(){
 	b.gamma = .75;
 
 
-	vector<int> layers = {25, 10, 1};
-	vector<int> types = {5, 5, 1};
-	vector<double> dropout = {.01, .02, 0};
-	vector<double> lambda = {0,0,0};
+	vector<int> layers = {25, 1};
+	vector<int> types = {5, 1};
+	vector<double> dropout = {.01, 0};
+	vector<double> lambda = {0,0};
 	b.valueNet.instantiate(260, layers, types, dropout, lambda, .1);
 	thread t1(run, "thread 1", b);
 
